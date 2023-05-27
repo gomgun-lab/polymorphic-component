@@ -1,6 +1,7 @@
 // https://blog.logrocket.com/build-strongly-typed-polymorphic-components-react-typescript/
 
-import type { PolymorphicRef, PolymorphicComponentProp } from "./types";
+import React from "react";
+import type { PolymorphicRef, PolymorphicComponentPropWithRef } from "./types";
 
 type Rainbow =
   | "red"
@@ -11,21 +12,30 @@ type Rainbow =
   | "indigo"
   | "violet";
 
-type ButtonProps = {
-  color?: Rainbow;
-};
+type ButtonProps<C extends React.ElementType> = PolymorphicComponentPropWithRef<
+  C,
+  {
+    color?: Rainbow;
+  }
+>;
 
-const Button = <C extends React.ElementType = "button">(
-  { as, children, ...restProps }: PolymorphicComponentProp<C, ButtonProps>,
-  ref?: PolymorphicRef<C>
-) => {
-  const Element = as || "button";
+type ButtonComponent = <C extends React.ElementType = "button">(
+  props: ButtonProps<C>
+) => React.ReactElement | null;
 
-  return (
-    <Element ref={ref} {...restProps}>
-      {children}
-    </Element>
-  );
-};
+const Button: ButtonComponent = React.forwardRef(
+  <C extends React.ElementType = "button">(
+    { as, children, ...restProps }: ButtonProps<C>,
+    ref?: PolymorphicRef<C>
+  ) => {
+    const Element = as || "button";
+
+    return (
+      <Element ref={ref} {...restProps}>
+        {children}
+      </Element>
+    );
+  }
+);
 
 export default Button;
